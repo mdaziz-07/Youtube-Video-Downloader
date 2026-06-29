@@ -37,6 +37,8 @@ Look inside the extracted folder for a folder named **bin**. Inside it, you will
 
 Copy ffmpeg.exe and paste it directly into the exact same folder where you intend to save your python script.
 
+---
+
 **Phase 2: Save and Run the Python Server (downloader.py)**
 Create a new folder on your computer **(e.g., C:\YouTubeDownloader).**
 
@@ -48,6 +50,8 @@ Run the backend by double-clicking **downloader.py** or executing it via command
 
 **python downloader.py**
 
+---
+
 **Phase 3: Setup the Browser Extension (Brave or Chrome)**
 Install the **Tampermonkey extension** from the official Chrome Web Store.
 
@@ -55,7 +59,9 @@ Open the Tampermonkey Dashboard, click the "Create a new script" button (the + i
 
 Open the Tampermonkey UserScript file provided in this repository, copy its entire contents, paste it into the editor, and click save (Ctrl + S).
 
-Reload YouTube inside your browser using Ctrl + F5.
+Reload YouTube inside your browser using **Ctrl + F5.**
+
+---
 
 **🚀 Phase 4: Run Silently on Windows Startup (Optional)**
 If you wish to enjoy fluid automated download shortcuts automatically every time your machine boots up without opening a console terminal window manually, use the built-in startup script:
@@ -67,6 +73,8 @@ Type **shell:startup** and strike Enter to access your personal Windows Startup 
 Copy the **youtube_server.vbs** script file provided in this repository and paste it directly into this startup folder.
 
 Optional: If your installation directory is not C:\YouTubeDownloader, right-click **youtube_server.vbs**, select Edit, and update the directory location to match your folder pathway.
+
+---
 
 **🎯 Phase 5: Verification & Usage Loop**
 Head over to YouTube inside Chrome or Brave and reload the tab entirely via Ctrl + F5.
