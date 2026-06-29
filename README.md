@@ -26,7 +26,8 @@ A high-performance, concurrent YouTube download automation system. This tool uti
 2. Run the following installation layout array block to fetch the background infrastructure dependencies:
    ```bash
    pip install yt-dlp Flask flask-cors
-**Step 3: Install FFmpeg (Required for HD/1080p/4K Merging)**
+### **Step 3: Install FFmpeg (Required for HD/1080p/4K Merging)**
+
 YouTube distributes high-definition video and audio metadata packages as entirely separate, distinct split stream paths. Without FFmpeg, yt-dlp will choke out at a max capping point of 720p.
 
 Download a pre-compiled Windows build of FFmpeg **(like the ones from gyan.dev).**
@@ -39,7 +40,8 @@ Copy ffmpeg.exe and paste it directly into the exact same folder where you inten
 
 ---
 
-**Phase 2: Save and Run the Python Server (downloader.py)**
+### **Phase 2: Save and Run the Python Server (downloader.py)**
+
 Create a new folder on your computer **(e.g., C:\YouTubeDownloader).**
 
 Make sure your **ffmpeg.exe** file is pasted inside this folder.
@@ -52,7 +54,8 @@ Run the backend by double-clicking **downloader.py** or executing it via command
 
 ---
 
-**Phase 3: Setup the Browser Extension (Brave or Chrome)**
+### **Phase 3: Setup the Browser Extension (Brave or Chrome)**
+
 Install the **Tampermonkey extension** from the official Chrome Web Store.
 
 Open the Tampermonkey Dashboard, click the "Create a new script" button (the + icon).
@@ -63,7 +66,8 @@ Reload YouTube inside your browser using **Ctrl + F5.**
 
 ---
 
-**🚀 Phase 4: Run Silently on Windows Startup (Optional)**
+### **🚀 Phase 4: Run Silently on Windows Startup (Optional)**
+
 If you wish to enjoy fluid automated download shortcuts automatically every time your machine boots up without opening a console terminal window manually, use the built-in startup script:
 
 Hit Win + R keys to pop open the Windows Run dialog prompt utility row.
@@ -76,7 +80,8 @@ Optional: If your installation directory is not C:\YouTubeDownloader, right-clic
 
 ---
 
-**🎯 Phase 5: Verification & Usage Loop**
+### **🎯 Phase 5: Verification & Usage Loop**
+
 Head over to YouTube inside Chrome or Brave and reload the tab entirely via Ctrl + F5.
 
 Find any video thumbnail on the home screen, or open a video player watch page.
