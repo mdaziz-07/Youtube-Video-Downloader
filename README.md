@@ -29,27 +29,27 @@ A high-performance, concurrent YouTube download automation system. This tool uti
 **Step 3: Install FFmpeg (Required for HD/1080p/4K Merging)**
 YouTube distributes high-definition video and audio metadata packages as entirely separate, distinct split stream paths. Without FFmpeg, yt-dlp will choke out at a max capping point of 720p.
 
-Download a pre-compiled Windows build of FFmpeg (like the ones from gyan.dev).
+Download a pre-compiled Windows build of FFmpeg **(like the ones from gyan.dev).**
 
 Extract the downloaded zip file.
 
-Look inside the extracted folder for a folder named bin. Inside it, you will see ffmpeg.exe.
+Look inside the extracted folder for a folder named **bin**. Inside it, you will see **ffmpeg.exe.**
 
 Copy ffmpeg.exe and paste it directly into the exact same folder where you intend to save your python script.
 
 **Phase 2: Save and Run the Python Server (downloader.py)**
-Create a new folder on your computer (e.g., C:\YouTubeDownloader).
+Create a new folder on your computer **(e.g., C:\YouTubeDownloader).**
 
-Make sure your ffmpeg.exe file is pasted inside this folder.
+Make sure your **ffmpeg.exe** file is pasted inside this folder.
 
-Save the repository's downloader.py file into this exact same directory.
+Save the repository's **downloader.py** file into this exact same directory.
 
-Run the backend by double-clicking downloader.py or executing it via command prompt:
+Run the backend by double-clicking **downloader.py** or executing it via command prompt:
 
 **python downloader.py**
 
 **Phase 3: Setup the Browser Extension (Brave or Chrome)**
-Install the Tampermonkey extension from the official Chrome Web Store.
+Install the **Tampermonkey extension** from the official Chrome Web Store.
 
 Open the Tampermonkey Dashboard, click the "Create a new script" button (the + icon).
 
@@ -62,18 +62,18 @@ If you wish to enjoy fluid automated download shortcuts automatically every time
 
 Hit Win + R keys to pop open the Windows Run dialog prompt utility row.
 
-Type shell:startup and strike Enter to access your personal Windows Startup folder.
+Type **shell:startup** and strike Enter to access your personal Windows Startup folder.
 
-Copy the youtube_server.vbs script file provided in this repository and paste it directly into this startup folder.
+Copy the **youtube_server.vbs** script file provided in this repository and paste it directly into this startup folder.
 
-Optional: If your installation directory is not C:\YouTubeDownloader, right-click youtube_server.vbs, select Edit, and update the directory location to match your folder pathway.
+Optional: If your installation directory is not C:\YouTubeDownloader, right-click **youtube_server.vbs**, select Edit, and update the directory location to match your folder pathway.
 
 **🎯 Phase 5: Verification & Usage Loop**
 Head over to YouTube inside Chrome or Brave and reload the tab entirely via Ctrl + F5.
 
 Find any video thumbnail on the home screen, or open a video player watch page.
 
-Hold down the Ctrl key on your keyboard and Right-Click the video asset.
+Hold down the **Ctrl key on your keyboard and Right-Click the video asset.**
 
 What happens:
 
