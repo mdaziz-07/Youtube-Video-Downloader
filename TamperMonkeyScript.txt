@@ -1,0 +1,283 @@
+// ==UserScript==
+// @name         YouTube Local Auto-Download Button
+// @namespace    http://tampermonkey.net/
+// @version      3.8
+// @description  Chrome & Brave optimized multi-card client with title tracking and quick cancel buttons
+// @author       You
+// @match        https://www.youtube.com/*
+// @grant        GM_xmlhttpRequest
+// @connect      127.0.0.1
+// @run-at       document-start
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    let activePollingInterval = null;
+
+    window.addEventListener('contextmenu', function(e) {
+        if (e.ctrlKey) {
+            let item = e.target;
+            let targetVideoUrl = null;
+
+            while (item && item !== document.body) {
+                if (item.tagName === 'A' && item.href && item.href.includes('/watch')) {
+                    targetVideoUrl = item.href;
+                    break;
+                }
+                if (item.tagName === 'YTD-RICH-ITEM-RENDERER' || item.tagName === 'YTD-VIDEO-RENDERER' || item.tagName === 'YTD-GRID-VIDEO-RENDERER' || item.tagName === 'YTD-COMPACT-VIDEO-RENDERER') {
+                    const anchor = item.querySelector('a#thumbnail, a#video-title-link, a#video-title');
+                    if (anchor && anchor.href) { targetVideoUrl = anchor.href; break; }
+                }
+                item = item.parentNode;
+            }
+
+            if (!targetVideoUrl && window.location.href.includes('/watch')) {
+                targetVideoUrl = window.location.href;
+            }
+
+            if (targetVideoUrl && targetVideoUrl.includes('v=')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                let titleText = "Loading Video Title...";
+                const cardParent = item?.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, ytd-rich-grid-media');
+                if (cardParent) {
+                    const titleNode = cardParent.querySelector('#video-title, #video-title-link, h3 a, yt-formatted-string');
+                    if (titleNode) titleText = titleNode.textContent.trim();
+                }
+
+                if (!titleText && window.location.pathname.startsWith('/watch')) {
+                    const watchTitleNode = document.querySelector('h1.ytd-watch-metadata, #title h1');
+                    if (watchTitleNode) titleText = watchTitleNode.textContent.trim();
+                }
+
+                titleText = titleText.replace(/^\(\d+\)\s*/, "").replace(" - YouTube", "").trim();
+                issueDownloadToLocalHost(targetVideoUrl, titleText);
+            }
+        }
+    }, true);
+
+    function verifyContainerDeck() {
+        let deck = document.getElementById('ytdlp-automation-deck');
+        if (!deck) {
+            deck = document.createElement('div');
+            deck.id = 'ytdlp-automation-deck';
+            deck.style.cssText = `
+                position: fixed !important;
+                bottom: 30px !important;
+                right: 30px !important;
+                width: 340px !important;
+                max-height: 500px !important;
+                overflow-y: auto !important;
+                z-index: 2147483647 !important;
+                display: flex !important;
+                flex-direction: column-reverse !important;
+                gap: 12px !important;
+                pointer-events: none !important;
+                font-family: "Roboto", Arial, sans-serif !important;
+            `;
+            document.body.appendChild(deck);
+        }
+        return deck;
+    }
+
+    function createRectangleCard(videoId, initialTitle) {
+        const deck = verifyContainerDeck();
+        if (document.getElementById(`card-${videoId}`)) return;
+
+        const card = document.createElement('div');
+        card.id = `card-${videoId}`;
+        card.style.cssText = `
+            width: 320px !important;
+            background-color: #1f1f1f !important;
+            border: 1px solid #333 !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+            pointer-events: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            box-sizing: border-box !important;
+            transition: opacity 0.4s ease !important;
+        `;
+
+        const titleDiv = document.createElement('div');
+        titleDiv.id = `title-${videoId}`;
+        titleDiv.style.cssText = 'color: #ffffff !important; font-size: 13px !important; font-weight: 500 !important; margin-bottom: 8px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; width: 100% !important;';
+        titleDiv.textContent = initialTitle;
+
+        const barContainer = document.createElement('div');
+        barContainer.style.cssText = 'width: 100% !important; height: 6px !important; background-color: #ffffff !important; border-radius: 3px !important; overflow: hidden !important; margin-bottom: 8px !important;';
+
+        const bar = document.createElement('div');
+        bar.id = `bar-${videoId}`;
+        bar.style.cssText = 'width: 0% !important; height: 100% !important; background-color: #ff0000 !important; transition: width 0.3s ease !important;';
+        barContainer.appendChild(bar);
+
+        const metricsDiv = document.createElement('div');
+        metricsDiv.style.cssText = 'display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; font-size: 11px !important; color: #aaa !important; white-space: nowrap !important;';
+
+        const statusSpan = document.createElement('span');
+        statusSpan.id = `status-${videoId}`;
+        statusSpan.textContent = 'Connecting...';
+
+        const speedSpan = document.createElement('span');
+        speedSpan.id = `speed-${videoId}`;
+        speedSpan.textContent = '0.0 MB/s';
+
+        const sizeSpan = document.createElement('span');
+        sizeSpan.id = `size-${videoId}`;
+        sizeSpan.textContent = 'Waiting...';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.id = `cancel-${videoId}`;
+        cancelBtn.textContent = '✕';
+        cancelBtn.style.cssText = 'background: transparent !important; border: none !important; color: #888 !important; cursor: pointer !important; font-size: 11px !important; font-weight: bold !important; padding: 2px 6px !important; margin-left: 4px !important; border-radius: 4px !important;';
+        
+        cancelBtn.onmouseover = () => { cancelBtn.style.color = '#ff0000'; cancelBtn.style.backgroundColor = 'rgba(255, 0, 0, 0.15)'; };
+        cancelBtn.onmouseout = () => { cancelBtn.style.color = '#888'; cancelBtn.style.backgroundColor = 'transparent'; };
+        
+        cancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            statusSpan.textContent = '❌ Cancelled';
+            statusSpan.style.color = '#ff4d4d';
+            speedSpan.textContent = '';
+            sizeSpan.textContent = '';
+            bar.style.backgroundColor = '#555555';
+            cancelBtn.remove();
+            
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: "http://127.0.0.1:5678/cancel",
+                data: JSON.stringify({ video_id: videoId }),
+                headers: { "Content-Type": "application/json" }
+            });
+
+            setTimeout(() => {
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 400);
+            }, 800);
+        });
+
+        metricsDiv.appendChild(statusSpan);
+        metricsDiv.appendChild(speedSpan);
+        metricsDiv.appendChild(sizeSpan);
+        metricsDiv.appendChild(cancelBtn);
+
+        card.appendChild(titleDiv);
+        card.appendChild(barContainer);
+        card.appendChild(metricsDiv);
+        deck.appendChild(card);
+    }
+
+    function issueDownloadToLocalHost(url, title) {
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "http://127.0.0.1:5678/download",
+            data: JSON.stringify({ url: url, title: title }),
+            headers: { "Content-Type": "application/json" },
+            onload: function(response) {
+                if (response.responseText && response.responseText.trim().startsWith('{')) {
+                    const res = JSON.parse(response.responseText);
+                    createRectangleCard(res.video_id, title);
+                    startPollingTracker();
+                }
+            }
+        });
+    }
+
+    function startPollingTracker() {
+        if (activePollingInterval) return;
+        activePollingInterval = setInterval(() => {
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: "http://127.0.0.1:5678/progress",
+                onload: function(response) {
+                    if (response.responseText && response.responseText.trim().startsWith('{')) {
+                        const tasks = JSON.parse(response.responseText);
+                        let remainingActiveTasks = 0;
+
+                        const localCards = document.querySelectorAll('[id^="card-"]');
+                        localCards.forEach(cardEl => {
+                            const cardId = cardEl.id.replace('card-', '');
+                            if (!tasks[cardId]) {
+                                cardEl.style.opacity = '0';
+                                setTimeout(() => cardEl.remove(), 400);
+                            }
+                        });
+
+                        for (const [id, data] of Object.entries(tasks)) {
+                            const progressBar = document.getElementById(`bar-${id}`);
+                            const titleLabel = document.getElementById(`title-${id}`);
+                            const statusLabel = document.getElementById(`status-${id}`);
+                            const speedLabel = document.getElementById(`speed-${id}`);
+                            const sizeLabel = document.getElementById(`size-${id}`);
+                            const cBtn = document.getElementById(`cancel-${id}`);
+                            const entireCard = document.getElementById(`card-${id}`);
+
+                            if (!progressBar || !entireCard) continue;
+
+                            if (titleLabel && data.title && data.title !== "Loading Video Title..." && !data.title.includes("YouTube")) {
+                                titleLabel.textContent = data.title;
+                            }
+
+                            if (statusLabel.textContent === '❌ Cancelled') continue;
+
+                            progressBar.style.width = data.percent;
+                            speedLabel.textContent = data.speed;
+                            
+                            if (data.status === 'fetching formats...') {
+                                statusLabel.textContent = '🔍 Fetching Formats...';
+                                sizeLabel.textContent = '';
+                                remainingActiveTasks++;
+                            } else if (data.status === 'selecting quality...') {
+                                statusLabel.textContent = 'Choose Quality Box...';
+                                sizeLabel.textContent = '';
+                                remainingActiveTasks++;
+                            } else if (data.status === 'downloading') {
+                                statusLabel.textContent = `${data.quality} (${data.percent})`;
+                                sizeLabel.textContent = `${data.remaining} left of ${data.total}`;
+                                remainingActiveTasks++;
+                            } else if (data.status === 'merging') {
+                                statusLabel.textContent = 'Merging Tracks...';
+                                sizeLabel.textContent = data.total;
+                                remainingActiveTasks++;
+                            } else if (data.status === 'cancelled') {
+                                statusLabel.textContent = '❌ Cancelled';
+                                statusLabel.style.color = '#ff4d4d';
+                                speedLabel.textContent = '';
+                                sizeLabel.textContent = '';
+                                progressBar.style.backgroundColor = '#555555';
+                                if (cBtn) cBtn.remove();
+                                
+                                setTimeout(() => {
+                                    entireCard.style.opacity = '0';
+                                    setTimeout(() => entireCard.remove(), 400);
+                                }, 1000);
+                            } else if (data.status === 'completed') {
+                                statusLabel.textContent = '✅ Completed';
+                                statusLabel.style.color = '#2ecc71';
+                                speedLabel.textContent = '';
+                                sizeLabel.textContent = data.total;
+                                if (cBtn) cBtn.remove();
+                                
+                                setTimeout(() => {
+                                    entireCard.style.opacity = '0';
+                                    setTimeout(() => entireCard.remove(), 400);
+                                }, 5000);
+                            }
+                        }
+
+                        if (remainingActiveTasks === 0) {
+                            clearInterval(activePollingInterval);
+                            activePollingInterval = null;
+                        }
+                    }
+                }
+            });
+        }, 1000);
+    }
+})();
