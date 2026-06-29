@@ -1,5 +1,6 @@
 *Phase 1: 
 Install Python & System Dependencies*
+
 *Step 1*: 
 Install Python
 Download the latest version of Python for Windows from the official website.
