@@ -1,23 +1,33 @@
-*Phase 1: 
-Install Python & System Dependencies*
+# 📥 Advanced YouTube Local Video Downloader
 
-*Step 1*: 
-Install Python
-Download the latest version of Python for Windows from the official website.
+A high-performance, concurrent YouTube download automation system. This tool utilizes a **local Python backend** (powered by `yt-dlp` and a lightweight `Flask` server) bridged with a **Tampermonkey UserScript** to provide fluid, card-based, multi-video download tracking directly inside your web browser (**Google Chrome** or **Brave**).
 
-CRITICAL: When running the installer, make sure to check the box at the bottom that says "Add python.exe to PATH" before clicking install. If you skip this, your terminal won't recognize python commands.
+---
 
-*Step 2*: 
-Install the Required Libraries
-Open your Windows Command Prompt (cmd).
+## ✨ Features
+* **Contextual Interception:** Just hold `Ctrl` and `Right-Click` any thumbnail or active video on YouTube to trigger a download.
+* **Dynamic Quality Extraction:** Automatically polls YouTube API metadata line-by-line to display *only* the true formats natively available for that specific video (up to 4K/8K resolution).
+* **Multi-Video Parallel Stacking:** Supports downloading multiple videos at the same time with an elegant stacked card deck interface in the bottom right corner.
+* **Live Dashboards:** Displays dynamic horizontal diagnostic rows tracking real-time download speeds, total sizes, remaining megabytes, and crisp progress bars.
+* **Instant Abort Kill-Switch:** Click the `✕` close button on any live tracking card to forcefully terminate background network extraction streams instantly.
 
-Run the following command to install the background server infrastructure and download engine:
+---
 
-pip install yt-dlp Flask flask-cors
+## 🛠️ Step-by-Step Installation Guide
 
-*Step 3*: 
-Install FFmpeg (Required for 1080p / 4K Merging)
-YouTube serves high-definition video and audio as two separate tracks. Without a tool called FFmpeg, yt-dlp can only download low-quality videos (usually 720p or lower).
+### 🧱 Phase 1: Install Python & System Dependencies
+
+#### **Step 1: Install Python**
+1. Download the latest release version of [Python for Windows](https://www.python.org/downloads/).
+2. ⚠️ **CRITICAL:** When launching the installer execution window, check the box at the bottom that reads **"Add python.exe to PATH"** before initiating installation parameters. Skipping this will break your system terminalbindings.
+
+#### **Step 2: Install Python Libraries**
+1. Open your Windows **Command Prompt** (`cmd`).
+2. Run the following installation layout array block to fetch the background infrastructure dependencies:
+   ```bash
+   pip install yt-dlp Flask flask-cors
+**Step 3: Install FFmpeg (Required for HD/1080p/4K Merging)**
+YouTube distributes high-definition video and audio metadata packages as entirely separate, distinct split stream paths. Without FFmpeg, yt-dlp will choke out at a max capping point of 720p.
 
 Download a pre-compiled Windows build of FFmpeg (like the ones from gyan.dev).
 
@@ -27,51 +37,39 @@ Look inside the extracted folder for a folder named bin. Inside it, you will see
 
 Copy ffmpeg.exe and paste it directly into the exact same folder where you intend to save your python script.
 
-*Phase 2*: 
-Save and Run the Python Server (downloader.py)
+**Phase 2: Save and Run the Python Server (downloader.py)**
 Create a new folder on your computer (e.g., C:\YouTubeDownloader).
 
 Make sure your ffmpeg.exe file is pasted inside this folder.
 
-Open Notepad, paste the downloader.py code entirely, and save it as downloader.py inside that folder (make sure to select "All Files (.)" in Notepad so it doesn't save as a .txt file):
-python downloader.py
-Keep this terminal window running in the background.
+Save the repository's downloader.py file into this exact same directory.
 
-*Phase 3*: Browser Setup (Brave & Google Chrome)
-The browser code handles everything via safe dynamic nodes to fully protect against Brave and Chrome's strict Trusted Types / CSP sandboxing frameworks.
+Run the backend by double-clicking downloader.py or executing it via command prompt:
 
-*Step 1*: 
-Install Tampermonkey
-For Google Chrome: Install Tampermonkey from the Chrome Web Store.
+**python downloader.py**
 
-For Brave Browser: Install the exact same extension from the Chrome Web Store link.
+**Phase 3: Setup the Browser Extension (Brave or Chrome)**
+Install the Tampermonkey extension from the official Chrome Web Store.
 
-*Step 2*: 
-Install the Universal UserScript
-Click the Tampermonkey extension icon in your browser toolbar and select Create a new script.
+Open the Tampermonkey Dashboard, click the "Create a new script" button (the + icon).
 
-Erase any placeholder code inside the editor box completely.
+Open the Tampermonkey UserScript file provided in this repository, copy its entire contents, paste it into the editor, and click save (Ctrl + S).
 
-Paste the TamperMonkeyScript.txt
+Reload YouTube inside your browser using Ctrl + F5.
 
-Press Ctrl + S inside the Tampermonkey editor to install the script.
+**🚀 Phase 4: Run Silently on Windows Startup (Optional)**
+If you wish to enjoy fluid automated download shortcuts automatically every time your machine boots up without opening a console terminal window manually, use the built-in startup script:
 
-*Phase 4*:
-If You want the downloader.py script to run automatically on startup in background, do this step:
+Hit Win + R keys to pop open the Windows Run dialog prompt utility row.
 
-Press Win + R on your keyboard to open the Windows Run dialog box.
+Type shell:startup and strike Enter to access your personal Windows Startup folder.
 
-Type shell:startup and hit Enter. This opens your personal Windows Startup folder.
+Copy the youtube_server.vbs script file provided in this repository and paste it directly into this startup folder.
 
-Right-click an empty space inside this folder, select New -> Text Document, and name it exactly:
-youtube_server.vbs
-(Make sure the file extension actually changes from .txt to .vbs).
+Optional: If your installation directory is not C:\YouTubeDownloader, right-click youtube_server.vbs, select Edit, and update the directory location to match your folder pathway.
 
-Right-click your new youtube_server.vbs file, select Edit (or open with Notepad), paste the script below, and save it:
-
-*Phase 5*: 
-Verification & Usage Loop
-Head to YouTube inside Chrome or Brave and reload the tab entirely via Ctrl + F5.
+**🎯 Phase 5: Verification & Usage Loop**
+Head over to YouTube inside Chrome or Brave and reload the tab entirely via Ctrl + F5.
 
 Find any video thumbnail on the home screen, or open a video player watch page.
 
@@ -81,8 +79,8 @@ What happens:
 
 A clean dashboard card appears in the bottom right corner showing "🔍 Fetching Formats...".
 
-The Tkinter resolution box opens on your screen containing the exact, true video resolutions found for that specific video clip (e.g., 2160p (4K), 1440p, 1080p).
+The Tkinter resolution box opens on your desktop containing the exact, true video resolutions found for that specific video clip (e.g., 2160p (4K), 1440p, 1080p).
 
-Pick your format and hit Start Download. The progress bar switches to red and tracks data transfers live.
+Pick your format and hit Start Download. The progress bar switches to a red line and tracks data transfers live.
 
 Clicking ✕ on the card kills the download process immediately, prints an active cancellation indicator, and safely pulls the overlay away from your screen.
